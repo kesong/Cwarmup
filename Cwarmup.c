@@ -25,10 +25,10 @@ struct player init_player(char* name_str, int num, char* tna, char* city_str){
 	return *p;
 }
 
-int size_of_players(PLAYER *player_array[]){
+int size_of_players(PLAYER **player_array){
 	int player_count=0;
-	while((*player_array)->pname){
-		(*player_array)++;
+	while(*player_array != NULL){
+		player_array++;
 		player_count++;
 	}
 	return player_count;
@@ -37,7 +37,8 @@ int size_of_players(PLAYER *player_array[]){
 void print_players(PLAYER *outplayer[]){
 	printf("outplayer address: %p \n", outplayer);
 	PLAYER *pointer_backup = *outplayer;
-	int player_sum = size_of_players(outplayer);
+	PLAYER** p_p_array = outplayer;
+	int player_sum = size_of_players(p_p_array);
 	printf("There are %d players. \n", player_sum);
 	printf("After caculate players, the outplayer address is: %p \n", outplayer);
 	//outplayer = pointer_backup;
@@ -68,7 +69,7 @@ int main(int argc, char *argv){
 	TEAM rapoto = {.tname="Rapoto", .city="VAN"};
 	PLAYER CART = {.pname="Cart", .pnumber=15 , &rapoto};
 
-	PLAYER* players[] = {MJ, &KOBE, &IVERSON, &HILL, &CART};
+	PLAYER* players[] = {MJ, &KOBE, &IVERSON, &HILL, &CART, NULL};
 	print_players(players);
 	free(MJ);
 	free(MJ->tm);
