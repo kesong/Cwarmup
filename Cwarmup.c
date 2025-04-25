@@ -37,12 +37,9 @@ int size_of_players(PLAYER **player_array){
 void print_players(PLAYER *outplayer[]){
 	printf("outplayer address: %p \n", outplayer);
 	PLAYER *pointer_backup = *outplayer;
-	PLAYER** p_p_array = outplayer;
-	int player_sum = size_of_players(p_p_array);
+	int player_sum = size_of_players(outplayer);
 	printf("There are %d players. \n", player_sum);
 	printf("After caculate players, the outplayer address is: %p \n", outplayer);
-	//outplayer = pointer_backup;
-	//printf("restored address is: %p \n", outplayer);
 	for(int i=0; i<player_sum; i++){
 		printf("Player name is: %s \n", outplayer[i]->pname);
 		printf("Number is: %d \n", outplayer[i]->pnumber);
