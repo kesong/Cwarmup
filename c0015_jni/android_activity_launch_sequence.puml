@@ -1,0 +1,98 @@
+@startuml Android Activity Launch Sequence
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 150
+
+title Android Activity Launch Process Sequence Diagram
+
+participant "App/Launcher" as App
+participant "ActivityThread" as AT
+participant "Instrumentation" as Instr
+participant "ActivityManagerService" as AMS
+participant "PackageManagerService" as PMS
+participant "WindowManagerService" as WMS
+participant "Zygote" as Zygote
+participant "New App Process" as NewApp
+participant "Activity" as Activity
+participant "SurfaceFlinger" as SF
+
+== Launch Request ==
+App -> AT: startActivity(Intent)
+AT -> Instr: execStartActivity(Intent)
+Instr -> AMS: startActivity(Intent)
+
+== Intent Resolution & Validation ==
+AMS -> PMS: resolveActivity(Intent)
+PMS --> AMS: ActivityInfo
+AMS -> AMS: checkPermissions()
+AMS -> AMS: findOrCreateTaskRecord()
+
+== Process Management ==
+alt Process doesn't exist (Cold Start)
+    AMS -> Zygote: fork new process
+    Zygote -> NewApp: create process
+    NewApp -> AT: main()
+    AT -> AMS: attachApplication()
+    AMS -> AT: bindApplication()
+    AT -> AT: handleBindApplication()
+    AT -> Activity: Application.onCreate()
+else Process exists (Warm/Hot Start)
+    note over AMS: Use existing process
+end
+
+== Activity Creation ==
+AMS -> AT: scheduleLaunchActivity()
+AT -> AT: handleLaunchActivity()
+AT -> Instr: newActivity()
+Instr -> Activity: new Activity()
+AT -> Activity: attach()
+
+== Activity Lifecycle - onCreate ==
+AT -> Instr: callActivityOnCreate()
+Instr -> Activity: onCreate(Bundle)
+Activity -> Activity: setContentView()
+Activity -> Activity: inflate layouts
+Activity --> Instr: return
+Instr --> AT: return
+
+== Window Creation & Setup ==
+Activity -> WMS: addWindow()
+WMS -> WMS: createWindowState()
+WMS -> SF: createSurface()
+SF --> WMS: Surface
+WMS --> Activity: return
+
+== Activity Lifecycle - onStart ==
+AT -> Instr: callActivityOnStart()
+Instr -> Activity: onStart()
+Activity --> Instr: return
+Instr --> AT: return
+
+== Activity Lifecycle - onResume ==
+AT -> Instr: callActivityOnResume()
+Instr -> Activity: onResume()
+Activity -> WMS: setWindowVisible(true)
+WMS -> WMS: updateWindowVisibility()
+Activity --> Instr: return
+Instr --> AT: return
+
+== Window Display & Focus ==
+WMS -> SF: show surface
+SF -> SF: composite layers
+WMS -> WMS: setFocusedWindow()
+WMS -> Activity: onWindowFocusChanged(true)
+
+== Input Setup ==
+WMS -> WMS: registerInputChannel()
+WMS -> Activity: setup input events
+
+== Launch Complete ==
+AT -> AMS: activityResumed()
+AMS -> App: onActivityResult() [if needed]
+
+note over App, SF
+    Activity is now visible and interactive
+    User can interact with the UI
+end note
+
+@enduml

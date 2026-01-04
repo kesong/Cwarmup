@@ -1,0 +1,30 @@
+CC=cc
+CFLAGS=-Wall -g -I$(INCLUDE_DIR)
+
+SRCS=$(wildcard *.c)
+#OBJS=$(patsubst %.c,$(BIN_DIR)/%.o,$(notdir $(wildcard $(SRCS))))
+OBJS=$(patsubst %.c,%.o,$(notdir $(wildcard $(SRCS))))
+#OBJS=$(SRCS:%.c=%.o)    //不带路径的文件名
+
+#$(info $(SRCS))
+#$(info $(OBJS))
+
+$(OBJS): $(SRCS)
+	$(CC) -c $(CFLAGS) $^ $@
+
+# execute the following command in the directory test, the .o file will gernerated
+# cc -c -I..include *.o *.c
+#
+#
+#指定完整文件名的写法
+# 
+#OBJ=$(BIN_DIR)/test_player.o
+#$(BIN_DIR)/test_binary_tree.o: test_binary_tree.c $(OBJ)
+	#@mkdir -p $(BIN_DIR)
+	#$(CC) $(CFLAGS) -c $^ -o $@
+
+#$(BIN_DIR)/test_player.o: test_player.c
+	#$(CC) $(CFLAGS) -c $^ -o $@
+#
+#
+#

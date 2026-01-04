@@ -34,16 +34,27 @@ int size_of_players(PLAYER **player_array){
 	return player_count;
 }
 
+void print_single_player(PLAYER *player){
+	if(player != NULL){
+		printf("Player name is: %s \n", player->pname);
+		printf("Number is: %d \n", player->pnumber);
+		printf("Team is: %s, the team located in %s \n", player->tm->tname, player->tm->city);
+	}
+	else{
+		printf("Player point a invalid address, no player found.");
+		exit;
+	}
+}
+
 void print_players(PLAYER *outplayer[]){
 	printf("outplayer address: %p \n", outplayer);
 	PLAYER *pointer_backup = *outplayer;
 	int player_sum = size_of_players(outplayer);
 	printf("There are %d players. \n", player_sum);
 	printf("After caculate players, the outplayer address is: %p \n", outplayer);
-	for(int i=0; i<player_sum; i++){
-		printf("Player name is: %s \n", outplayer[i]->pname);
-		printf("Number is: %d \n", outplayer[i]->pnumber);
-		printf("Team is: %s, and located in %s \n", outplayer[i]->tm->tname, outplayer[i]->tm->city);
+	while(*outplayer != NULL){
+		print_single_player(*outplayer);
+		outplayer++;
 	}
 	printf("##### Players print end. ##### \n");
 }
@@ -66,6 +77,7 @@ int main(int argc, char *argv){
 	TEAM rapoto = {.tname="Rapoto", .city="VAN"};
 	PLAYER CART = {.pname="Cart", .pnumber=15 , &rapoto};
 
+	//add a NULL as the last element in the struct array, make it as a flag to check if the pointer is point to the last element.
 	PLAYER* players[] = {MJ, &KOBE, &IVERSON, &HILL, &CART, NULL};
 	print_players(players);
 	free(MJ);

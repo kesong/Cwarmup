@@ -1,0 +1,357 @@
+#section 1
+#编译相关的内容，包含编译的命令，编译选项，默认路径等
+CC								:=	cc
+CFLAGS						=	-Wall -g -I$(INCLUDE_DIR)
+
+#section 1
+#Linux相关的命令
+FIND							:= /bin/find
+
+#section 2
+#各种目录，源码目录，目标文件生成目录，可执行文件生成目录等
+TOP_DIR						:= $(PWD)
+SRC_DIR						:= $(TOP_DIR)/src
+BUILD_DIR					:= $(TOP_DIR)/build
+INCLUDE_DIR				:= $(TOP_DIR)/include
+TEST_DIR					:= $(TOP_DIR)/test
+LIB_DIR						:= $(TOP_DIR)/lib
+SUBDIR						:= src test lib
+VPATH							:= src test include lib
+
+#section 2
+#jdk安装目录，以及java相关工具目录（tomcat，junit等）
+JAVA_HOME					:= /songzier/jdk-22.0.2
+JNI_INCLUDE				:= $(JAVA_HOME)/include
+JNI_MD_INCLUDE		:= $(JNI_INCLUDE)/linux
+JVM_LIB_PATH			:= $(JAVA_HOME)/lib/server
+#C程序调用java方法创建java虚拟机需要用到的so库，在编译C文件时候链接过程需要这个库
+JVM_SO						:= libjvm.so 
+
+#section 2
+#编译java需要用到的java，javac等命令
+JAVA							:= ${JAVA_HOME}/bin/java
+JAVAC							:= ${JAVA_HOME}/bin/javac
+JAR								:= ${JAVA_HOME}/bin/jar
+JFLAGS 						:= -sourcepath $(SRC_DIR) -d $(BUILD_DIR) -source 22
+JVMFLAGS					:= -ea -esa -Xfuture
+JVM								:= $(JAVA) $(JVMFLAGS)
+JARFLAGS					:= cf
+
+#section 2
+#导入需要的jar包相关
+LOG4J_JAR					:=
+JUNIT_JAR					:=
+
+#section 2
+#JNI目录
+JNI_DIR						:= $(TOP_DIR)/jni
+JNI_SRC						:= $(wildcard $(JNI_DIR)/*.c)
+JNI_CALL_JAVA			:= $(JNI_DIR)/call_java_player.c
+JNI_CALL_OBJ			:= $(addprefix $(BUILD_DIR)/,$(notdir $(subst .c,.o,$(JNI_CALL_JAVA))))
+JNI_BIN						:= $(BUILD_DIR)/call_java_player
+JAVA_CALL_C				:= $(JNI_DIR)/com_song_player_Player.c
+
+#section 3
+#打包库函数相关的命令和打包选项，生成静态库文件（.a文件）
+AR								= ar
+ARFLAGS						= crs
+LIBRARY						=
+BUILD_LIB					=
+
+#section 3
+#打包库函数，纯C下的库函数，生成动态链接库(.so文件)
+SOFLAGS						:= -fPIC
+
+#section 3
+#打包库函数，jni下使用的库函数，由于要引入jni.h和jni_md.h，需要将jdk目录中的include目录通过-I参数添加在gcc编译命令中
+JNISOINCLUDE			:= -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) -I$(INCLUDE_DIR)
+SO_PLAYER					= $(BUILD_DIR)/libplayer.so
+
+#section 4
+#链接相关内容，链接命令，链接选项
+LD								:=	ld
+LDFLAGS						:=	-L$(LIB_DIR)
+
+#section 5
+export TOP_DIR SRC_DIR BUILD_DIR INCLUDE_DIR TEST_DIR LIB_DIR
+
+#section 6
+#java文件
+JAVA_SRCS					= $(wildcard $(SRC_DIR)/*.java)
+TEST_SRCS					=	$(wildcard $(TEST_DIR)/*.java)
+SRCS							=	$(JAVA_SRCS) $(TEST_SRCS)
+NO_DIR_SRCS				=	$(notdir $(SRCS))
+
+#section 7
+#不同目标生成方式的多种组合,要编译成的目标文件有哪些，一般都会用函数将.c文件转换成.o文件
+#object（.o）文件不适合用wildcard函数，因为很多时候.o文件还未生成，用wildcard函数得到的多为空值，在将%.o文件作为target的时候导致不会执行这个target下面的命令
+#有的函数的结果会包含文件路径，看是需要获取单纯的文件名还是获取带有文件所在路径的文件名
+#组合一，源文件后缀名.c直接替换为.o，此种方法的.o文件带有完整的目录路径
+SRC_OBJS					=	$(subst .c,.o,$(SRC))
+TEST_OBJS					=	$(subst .c,.o,$(TEST_SRCS))
+LIB_OBJS					= $(subst .c,.o,$(LIB_SRCS))
+MAIN_OBJ					=	$(subst .c,.o,$(MAIN_SRC))
+OBJS							= $(SRC_OBJS) $(TEST_OBJS) $(MAIN_OBJ) $(LIB_OBJS)
+BUILD_OBJS				= $(addprefix $(BUILD_DIR)/,$(notdir $(OBJS)))
+
+#section 8
+#特殊的.o文件，只获取文件名，然后添加目录前缀，前缀就是希望这个.o文件保存的目录
+BUILD_MAIN_OBJ		=	$(addprefix $(BUILD_DIR)/,$(notdir $(MAIN_OBJ)))
+BUILD_LIB_OBJS		= $(addprefix $(BUILD_DIR)/,$(notdir $(LIB_OBJS)))
+
+#section 9
+#组合二，去掉.c文件的目录名，只获取文件名，然后与存放编译结果的目录bin目录进行组合. $(BIN_DIR)可以去掉，用$(addprefix ,,)函数添加目录名
+#SRC_OBJS			=	$(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(wildcard $(SRC))))
+#TEST_OBJS		=	$(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(wildcard $(TEST_SRCS))))
+#LIB_OBJS			=	$(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(wildcard $(LIB_SRCS))))
+#MAIN_OBJS		=	$(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(wildcard $(MAIN_SRCS))))
+
+#section 10
+#组合三，更简单的一种获取不带目录前缀的.c文件名的方法，然后将名称中的.c替换成.o，然后再跟目录进行组合
+#OBJS					=	$(addprefix $(BUILD_DIR)/,$(notdir $(SRC_OBJS))) $(addprefix $(BUILD_DIR)/,$(notdir $(TEST_OBJS)))
+#OBJS					= $(NO_DIR_SRCS:%.c=%.o)
+#BUILD_OBJS		= $(addprefix $(BUILD_DIR)/,$(OBJS))
+#OBJS					=	$(patsubst %.c,$(BIN_DIR)/%.o,$(notdir $(wildcard $(SRCS))))
+
+#section 11
+#更简单的一种将所有SRCS源文件中的.c替换为.o的方式
+#OBJS					= $(SRCS:%.c=%.o)
+
+#sectino 12
+#可执行文件，一般都是编译整个流程最后的生成文件，也是代码运行的体现
+#TARGETS=$(BUILD_DIR)
+
+#section 13
+#调试用，打印变量信息，看变量内容是否正确
+$(info $(JNI_CALL_JAVA))
+$(info $(JNI_CALL_OBJ))
+$(info $(SO_PLAYER))
+
+#section 14
+#终端输入make命令不添加任何目标，默认执行makefile中第一行的目标，本文件中第一行符合make规则写法的目标就是就是all这个目标
+all: $(SUBDIR)
+
+#section 15
+#	-C参数用来切换目录，切换到对应目录下执行make命令,子目录下没有makefile文件时，不需要切换到子目录执行make命令
+$(SUBDIR): RUN
+	#mkdir -p $(BUILD_DIR)
+	#make -C
+
+#section 16
+# 生成最终的可执行文件
+RUN: $(SO_PLAYER) $(JNI_BIN)
+	#$(call search_and_move_file $(SRC_DIR),""*.class,$(BUILD_DIR)) 
+
+#section 17
+#	打包多个库函数，生成静态库，将不同名称的库函数.的o文件分别打包成.a文件
+#$(BUILD_LIB): $(BUILD_LIB_OBJS)
+	#$(call archive_o_file,$^)
+
+#section 17
+#	打包单个库函数，生成静态库，将库函数.的o文件打包成.a文件，这里是静态库
+#$(BUILD_LIB): $(BUILD_LIB_OBJS)
+	#$(AR) $(ARFLAGS) $@ $^
+
+#section 17
+# 打包单个库函数，生成静态库，将库函数.的o文件打包成.a文件，如果这里的依赖对象是$(LIB_OBJS)，在下面的section中没有编写生成$(LIB_OBJS)的语句，
+# 会执行makefile的隐含规则，会先自动编译.c文件，在当前目录生成.o文件。
+#$(BUILD_LIB): $(LIB_OBJS)
+	#$(AR) $(ARFLAGS) $@ $^
+
+#section 18
+#	单独编译lib目录下的.c文件，生成.o文件
+#$(LIB_OBJS): $(LIB_SRCS)
+	#$(CC) $(CFLAGS) -c $< -o $@
+
+#section 19
+#	打包库函数，生成动态库，将.o文件打包成.so文件。
+#	编译需要的两个头文件jni.h在目录/songzier/jdk-22.0.2/include/中
+#	需要的另一个jni_md.h在目录/songzier/jdk-22.0.2/include/linux/中，用-I参数指定这些头文件
+#	注意这里打包成.so文件，编译命令行中不能有-c这个参数，如果加了-c，编译出来的so文件加载以后运行的时候会报错
+#	Exception in thread "main" java.lang.UnsatisfiedLinkError: /home/apuser/workspace/Cwarmup/c0015_jni/build/libplayer.so: 
+#	/home/apuser/workspace/Cwarmup/c0015_jni/build/libplayer.so: only ET_DYN and ET_EXEC can be loaded
+#	at java.base/jdk.internal.loader.NativeLibraries.load(Native Method)
+#	at java.base/jdk.internal.loader.NativeLibraries$NativeLibraryImpl.open(NativeLibraries.java:331)
+#	at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:197)
+#	at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:139)
+#	at java.base/jdk.internal.loader.NativeLibraries.findFromPaths(NativeLibraries.java:259)
+#	at java.base/jdk.internal.loader.NativeLibraries.loadLibrary(NativeLibraries.java:251)
+#	at java.base/java.lang.ClassLoader.loadLibrary(ClassLoader.java:2432)
+#	at java.base/java.lang.Runtime.loadLibrary0(Runtime.java:916)
+#	at java.base/java.lang.System.loadLibrary(System.java:2068)
+#	at com.song.player.Player.<clinit>(Player.java:12)
+# gcc -fPIC -shared -I/songzier/jdk-22.0.2/include -I/songzier/jdk-22.0.2/include/linux -Iinclude jni/com_song_player_Player.c -o build/libplayer.so
+$(SO_PLAYER): $(JAVA_CALL_C) compile
+	$(CC) $(SOFLAGS) $(JNISOINCLUDE) -shared -o $@ $<
+
+#section 20
+# 生成可执行文件call_java_player，需要使用-L指定动态链接库的地址（/songzier/jdk-22.0.2/lib/server/），用-l指定动态链接库的名称（libjvm.so，库的名称为jvm）
+$(JNI_BIN): $(JNI_CALL_OBJ)
+	$(CC) -o $@ $< -L$(JVM_LIB_PATH) -ljvm
+
+# section 21
+# 编译jni目录下的C程序调用java函数的.c文件，编译命令如下
+# gcc -Wall -g -Iinclude -I/songzier/jdk-22.0.2/include -I/songzier/jdk-22.0.2/include/linux -c jni/call_java_player.c -o build/call_java_player.o
+$(JNI_CALL_OBJ): $(JNI_CALL_JAVA)
+	$(CC) $(CFLAGS) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) -c $< -o $@
+	
+#section 21
+#编译.c文件,使用自定义的函数，逐个编译.c文件。
+#使用这个编译方式，生成.o文件会在build目录，各个子目录下也不需要单独的makefile文件了。
+#$(BUILD_OBJS): $(SRCS)
+	#$(call compile_c_file,$(SRCS))
+
+#section 21
+#保存所有java文件列表的一个临时文件
+all_javas					:= $(BUILD_DIR)/all.javas
+PLAYER_JAVA				:= $(SRC_DIR)/com/song/player/Player.java
+
+# section 21
+# 编译java文件，Player.java中使用了Team.java来定义属性，所以如果单独编译Player.java，也需要将Team.java作为编译文件，而且是第一个编译文件
+# javac src/com/song/player/Team.java src/com/song/player/Player.java src/com/song/player/GetSystemProperties.java src/com/song/player/PlayerMain.java
+# 更简单的命令为 javac src/com/song/player/*.java
+compile: $(all_javas)
+	$(JAVAC) $(JFLAGS) @$<
+
+#section 21
+#将所有的java文件保存到另一个文件中
+.INTERMIDATE: $(all_javas)
+$(all_javas):
+	mkdir -p build
+	$(FIND) $(SRC_DIR) -name '*.java' > $@
+
+# section 21
+# 生成jni目录下c代码的头文件，不在make中执行，要提前生成，这里只记录命令用
+# 本案中使用的命令如下，Player.java中使用了Team.java类定义变量，所以生成头文件的时候需要将Team.java类也放入命令中，否则会报error: cannot find symbol错误
+# javac -h jni src/com/song/player/Team.java src/com/song/player/Player.java
+#jni_xx.h: $(PLAYER_JAVA)
+	#javac -h $(JNI_DIR) $<
+
+# section 21
+#运行java程序，-cp后面指定编译生成的.class文件存在的目录，由于PlayerMain类的包名是com.song.player，所以运行的时候需要提供完整的包名，否则会提示无法找到PlayerMain类
+#java -cp build -Djava.library.path=build com.song.player.PlayerMain
+
+# 调试技巧（Debug）
+# 将每个make编译语句前面加上#注释掉，然后在每个命令前面增加一个特殊字符，make执行的时候不会执行该命令，但是会将命令展开，这样就知道不同的命令执行的效果，方便排查和修改
+# 如下每个范例通过在编译语句前面增加不同的特殊字符{，@，！等来识别不同语句展开后打印的内容
+
+#section 21，编译.c文件
+#依赖文件列表可以为空，直接执行下面的命令就行了，命令列表也是可以为空，那就是空语句
+#这种写法生成的.o文件都在makefile所在的目录
+#$(BUILD_OBJS): $(SRCS)
+	#$(CC) $(CFLAGS) -c $^ $@
+
+
+#section 21,编译.c文件
+#编译生成.o文件，要放到最下方，否则上面section 20会找不到.o文件，
+#make的依赖解析是从上至下，执行顺序也是从上至下，这就要求依赖文件的生成必须从下至上，最下面生成最早的依赖，一般就是.o文件
+#执行make，语句展开如下：
+# cc -Wall -g -I /home/apuser/workspace/Cwarmup/c0014_binary_tree/include -c /home/apuser/workspace/Cwarmup/c0014_binary_tree/src/binary_tree.c
+# -o /home/apuser/workspace/Cwarmup/c0014_binary_tree/build/binary_tree_main.o
+#$(BUILD_MAIN_OBJ): $(MAIN_SRC)
+	#$(CC) $(CFLAGS) -c $< -o $@
+
+#section 22,编译.c文件
+# error, 这种写法会导致只有$(SRCS)展开后的第一个.c文件作为源文件，目标中每一个.o文件的源文件都是它。
+# 可能在生成.o文件这一步没有问题，最后链接的时候，由于多个.o文件都包含同样的代码段，导致链接报错，错误是重复定义某个函数
+# 重复定义一般会出现在头文件（.h）的重复包含中，这里的写法也会导致出现重复定义的错误
+# 执行make，语句展开如下：
+# &cc -Wall -g -I /home/apuser/workspace/Cwarmup/c0014_binary_tree/include -c /home/apuser/workspace/Cwarmup/c0014_binary_tree/src/binary_tree.c
+# -o /home/apuser/workspace/Cwarmup/c0014_binary_tree/build/binary_tree_main.o
+#$(BUILD_OBJS): $(SRCS)
+	#&$(CC) $(CFLAGS) -c $< -o $@
+
+#section 23
+# error, 这种写法会报错，-c后面指定的是要编译的多个文件名，这个时候不能用-o参数,
+# make没有那么智能，他无法将目标里面的多个.o与依赖里面的多个.c形成一一对应,所以就报错了。
+# 执行make，语句展开如下：
+# cc -Wall -g -I /home/apuser/workspace/Cwarmup/c0014_binary_tree/include -c /home/apuser/workspace/Cwarmup/c0014_binary_tree/src/binary_tree.c
+# /home/apuser/workspace/Cwarmup/c0014_binary_tree/src/print_ADT.c /home/apuser/workspace/Cwarmup/c0014_binary_tree/test/test_player.c
+# /home/apuser/workspace/Cwarmup/c0014_binary_tree/binary_tree_main.c /home/apuser/workspace/Cwarmup/c0014_binary_tree/lib/queue.c
+# /home/apuser/workspace/Cwarmup/c0014_binary_tree/lib/stack.c
+# -o /home/apuser/workspace/Cwarmup/c0014_binary_tree/build/binary_tree_main.o
+#$(BUILD_OBJS): $(SRCS)
+	#$(CC) $(CFLAGS) -c $^ -o $@
+
+#sectdion 24
+# error, 这种写法不会执行编译，没有.o文件生成，因为make也不知道%.o怎么去匹配，去匹配哪些文件
+# 依赖文件也必须是已知的,target都必须是已知的值（字符串）否则会导致target下面的命令不会执行
+# cc -Wall -g -I /home/apuser/workspace/Cwarmup/c0014_binary_tree/include -c /home/apuser/workspace/Cwarmup/c0014_binary_tree/src/binary_tree.c
+# /home/apuser/workspace/Cwarmup/c0014_binary_tree/src/print_ADT.c /home/apuser/workspace/Cwarmup/c0014_binary_tree/test/test_player.c
+# /home/apuser/workspace/Cwarmup/c0014_binary_tree/binary_tree_main.c /home/apuser/workspace/Cwarmup/c0014_binary_tree/lib/queue.c
+# /home/apuser/workspace/Cwarmup/c0014_binary_tree/lib/stack.c
+# -o /home/apuser/workspace/Cwarmup/c0014_binary_tree/build/binary_tree_main.o
+#$(BUILD_DIR)/%.o: %.c
+	#$(CC) $(CFLAGS) -c $^ -o $@
+
+#section 25
+#自定义的函数，获取某个文件夹下的所有文件名，自定义函数中包含shell的if或者for语句时，do或者when里面的每条语句最后都得用分号结尾
+#自定义函数的函数体为多行时，从第二行（函数名为第一行）开始，结尾要用反斜线，最后两行的结尾不用加反斜线
+#shell变量需要使用双美元符号（$$）来取值
+#$(get_obj_file_list dir,files)
+define get_file_list
+	for d in $1; do													\
+		echo $$d/*.o > $2; 										\
+	done
+endef
+
+#$(get_file_list dir,files)
+define get_file_list
+	for d in $1; do											\
+		echo $$d > $2; 										\
+	done
+endef
+
+#$(delete_file file)
+define delete_file
+	for fl in $1; do										\
+		if [ -f $$fl ]; then 							\
+			rm $$fl;												\
+		else 															\
+			echo "$$fl not exist";					\
+		fi																\
+	done
+endef
+
+#makefile中有多行shell语句（这里用的是for）时候，需要在行结尾加上分号";"，否则会报如下这个错误
+# /bin/sh: 1: Syntax error: end of file unexpected (expecting "done")
+# $(basename )使用的是makefile函数，不是shell，所以前面需要使用两个$$第一个美元符号是shell的取变量，第二个美元符号是makefile变量和函数的引用方法，
+# basename的变量只能是makefile变量的获取方式，由于该语句嵌入在shell语句中，所以也得使用两个$$符号。
+# 总结：makefile中编写shell语句，shell命令或者语句获取mafefile定义的变量时，需要对该变量前使用双$符号（$$）。
+# $(BUILD_DIR)只使用一个美元符号($)就行了，因为这个值的获取不管是按照shell变量还是makefile的变量来获取都完全一样
+#$(compile c file)
+define compile_c_file
+	for c_file in $1; do										\
+		$(CC) $(CFLAGS) -c $$c_file -o $(BUILD_DIR)/$$(basename $${c_file%.c}).o;	\
+	done
+endef
+
+#依次打包lib目录下的多个库函数的.o文件成.a文件
+#$(archive static library)
+define archive_o_file
+	for o_file in $1; do										\
+		$(AR) $(ARFLAGS) $(BUILD_DIR)/lib$$(basename $${o_file%.o}).a $$o_file;	\
+	done
+endef
+
+# 删除编译java生成的class文件，也可以是其他类型文件，文件类型作为第二个参数
+# $(search_and_delete_file $(dir),$(file_type))
+define search_and_delete_file
+	find $$1 -name "$$2" -exec rm {} \;
+endef
+
+# 寻找并移动文件到相应目录
+# $(search_and_move_file $(dir),$(file_type),$(target_dir))
+define search_and_move_file
+	find $$1 -name "$$2" -exec mv {}  $$3 \;
+endef
+
+#section 26
+#clean those files generated during compile
+clean:
+	rm -rf *.o *.gch core
+	$(call delete_file,$(SRC_OBJS))
+	$(call delete_file,$(TEST_OBJS))
+	$(call delete_file,$(LIB_OBJS))
+	$(call search_and_delete_file,$(SRC_DIR),"*.class")
+	$(shell if [ -e $(BUILD_DIR) ]; then rm -rf $(BUILD_DIR); fi)

@@ -1,0 +1,51 @@
+CC=cc
+CFLAGS=-Wall -g -I $(INCLUDE_DIR)
+#LDFLAGS=
+VPATH=src include test
+
+SRC_DIR=src
+BIN_DIR=bin
+INCLUDE_DIR=include
+TEST_DIR=test
+
+SRCS=$(wildcard $(SRC_DIR)/*.c) $(wildcard $(TEST_DIR)/*.c)
+OBJS=$(patsubst %.c, $(BIN_DIR)/%.o, $(notdir $(wildcard $(SRCS))))
+TARGETS=$(BIN_DIR)/$(basename $(notdir $(wildcard $(TEST_DIR)/*.c)))
+
+#使用这个makefile要注意修改src，test目录下的双引号中#include 头文件的写法
+
+#写法三， 一步生成可执行文件test_stack
+#对应的编译命令为: cc -Wall -g -I include src/stack.c test/test_stack.c -o bin/test_stack
+$(TARGETS): $(SRCS)
+	@mkdir $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
+
+
+#写法二，简化的写法，使用make隐含规则，无需编写编译生成.o文件的target，make会自动将.c编译成.o，只需要编写将.o链接生成可执行文件的target就行了
+#但是生成的.o文件在当前目录，没有在bin目录下
+#$(TARGETS): test_stack.o stack.o
+	#@mkdir $(BIN_DIR)
+	#$(CC) $(CFLAGS) $^ -o $@
+
+
+#写法一，比较原始的写法，除了用变量替代了文件路径以外，与此前的写法没有什么不同
+#$(BIN_DIR)/stack.o: $(SRC_DIR)/stack.c
+	#@mkdir $(BIN_DIR)
+	#$(CC) $(CFLAGS) -c $< -o $@
+
+#$(BIN_DIR)/test_stack.o: $(TEST_DIR)/test_stack.c
+	#$(CC) $(CFLAGS) -c $< -o $@
+
+#$(OBJECTS): $(BIN_DIR)/test_stack.o $(BIN_DIR)/stack.o
+	#$(CC) $(CFLAGS) $^ -o $(OBJECTS)
+
+.PHONY: clean
+clean:
+	rm -rf *.o *.gch
+	$(shell if [ -e $(BIN_DIR) ]; then rm -rf $(BIN_DIR); fi)
+	
+
+
+#如下两个命令也可以完成编译，在bin目录下生成可执行程序test_stack。
+#cc -Wall -g -I include -c src/stack.c -o bin/stack.o
+#cc -Wall -g -I include src/test_stack.c bin/stack.o -o bin/test_stack

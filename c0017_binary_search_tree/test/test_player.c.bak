@@ -1,0 +1,357 @@
+#include "log.h"
+#include "print_ADT.h"
+#include "test_player.h"
+
+void init_player_name_tree() {
+  NODE *root_node = NULL;
+  root_node = (NODE *)malloc(sizeof(NODE));
+  root_node->ptr_data = NULL;
+  root_node->left = NULL;
+  root_node->right = NULL;
+}
+
+NODE *search_name_leaf(NODE *start_node, NODE *search_node) {
+  if (start_node != NULL && start_node->ptr_data != NULL) {
+    char *start_player_name = (char *)(start_node->ptr_data);
+    char *search_player_name = (char *)(search_node->ptr_data);
+    if (!strcmp(start_player_name, search_player_name)) {
+      return start_node;
+    }
+    search_name_leaf(start_node->left, search_node);
+    search_name_leaf(start_node->right, search_node);
+  }
+  return NULL;
+}
+
+NODE *search_left_name_NULL_leaf(NODE *start_node) {
+  if (start_node == NULL) {
+    return NULL;
+  }
+  if (start_node->right != NULL) {
+    search_left_name_NULL_leaf(start_node->right);
+  }
+  return start_node;
+}
+
+void delete_name_leaf(NODE *targ_node) {
+  NODE *parent_root_right_leaf = NULL;
+  if (root_node != NULL && root_node->ptr_data != NULL) {
+    NODE *parent_node = NULL;
+    NODE *child_node = NULL;
+    NODE *del_node = NULL;
+    NODE *left_child_node = NULL;
+    NODE *right_child_node = NULL;
+    char *targ_name = (char *)(targ_node->ptr_data);
+    char *root_name = (char *)(root_node->ptr_data);
+    if (targ_node == root_node || !strcmp(targ_name, root_name)) {
+      if (root_node->left == NULL && root_node->right != NULL) {
+        root_node = root_node->right;
+        return NULL;
+      } else if (root_node->left != NULL && root_node->right == NULL) {
+        root_node = root_node->right;
+        return NULL;
+      } else if (root_node->left != NULL && root_node->right != NULL) {
+        parent_root_right_leaf = search_left_name_NULL_leaf(root_node->left);
+        if (parent_root_right_leaf != NULL) {
+          parent_root_right_leaf->right = root_node->right;
+          root_node = root_node->left;
+          return NULL;
+        } else {
+          log_e("%s", "error occured when find the left null leaf.");
+          return NULL;
+        }
+      }
+    }
+    parent_node = search_name_leaf(root_node, targ_node);
+    left_child_node = search_name_leaf(parent_node->left, targ_node);
+    right_child_node = search_name_leaf(parent_node->right, targ_node);
+    char *left_child_name = (char *)(parent_node->left->ptr_data);
+    char *right_child_name = (char *)(parent_node->right->ptr_data);
+    if (!strcmp(left_child_name, targ_name)) {
+      del_node = left_child_node;
+    } else if (!strcmp(right_child_name, targ_name)) {
+      del_node = right_child_node;
+    }
+    if (del_node->left != NULL && del_node->left->ptr_data != NULL) {
+      if (parent_node->left->left == NULL && parent_node->left->right == NULL) {
+        parent_node->left = NULL;
+        free(del_node);
+        return NULL;
+      }
+      if (parent_node->left->left != NULL && parent_node->left->right == NULL) {
+        parent_node->left = parent_node->left->left;
+        return NULL;
+      }
+      if (parent_node->left->left == NULL && parent_node->left->right != NULL) {
+        parent_node->left = parent_node->left->right;
+        return NULL;
+      }
+    } else if (del_node->right != NULL && del_node->right->ptr_data != NULL) {
+      if (parent_node->left->left == NULL && parent_node->left->right == NULL) {
+        parent_node->right = NULL;
+        free(del_node);
+        return NULL;
+      }
+      if (parent_node->left->left != NULL && parent_node->left->right == NULL) {
+        parent_node->right = parent_node->left->left;
+        return NULL;
+      }
+      if (parent_node->left->left == NULL && parent_node->left->right != NULL) {
+        parent_node->right = parent_node->left->right;
+        return NULL;
+      }
+    }
+  }
+}
+
+NODE *mj_name_node  = NULL;
+NODE *kb_name_node  = NULL;
+NODE *td_name_node  = NULL;
+NODE *sc_name_node  = NULL;
+NODE *lj_name_node  = NULL;
+NODE *kg_name_node  = NULL;
+NODE *db_name_node  = NULL;
+NODE *cp_name_node  = NULL;
+NODE *ym_name_node  = NULL;
+NODE *yi_name_node  = NULL;
+NODE *wzz_name_node = NULL;
+NODE *dr_name_node  = NULL;
+NODE *ra_name_node  = NULL;
+
+
+void init_player_name_node{
+  /* player name. */
+  char *michael = "Michael Jordan";
+  *mj_name_node = (NODE *)malloc(sizeof(NODE));
+  mj_name_node->ptr_data = michael, mj_name_node->left = NULL, mj_name_node->right = NULL;
+  mj_name_node->node_t = PLAYER_NAME;
+
+  char *kb_name = "Kobe Bryant";
+  *kb_name_node = (NODE *)malloc(sizeof(NODE));
+  kb_name_node->ptr_data = kb_name, kb_name_node->left = NULL, kb_name_node->right = NULL;
+  kb_name_node->node_t = PLAYER_NAME;
+
+  char *td_name = "Tim Dunkan";
+  *td_name_node = (NODE *)malloc(sizeof(NODE));
+  td_name_node->ptr_data = td_name, td_name_node->left = NULL, td_name_node->right = NULL;
+  td_name_node->node_t = PLAYER_NAME;
+
+  char *curry_name = "Stephen Curry";
+  *sc_name_node = (NODE *)malloc(sizeof(NODE));
+  sc_name_node->ptr_data = curry_name, sc_name_node->left = NULL,
+  sc_name_node->right = NULL;
+  sc_name_node->node_t = PLAYER_NAME;
+
+  char *lj_name = "Lebron James";
+  *lj_name_node = (NODE *)malloc(sizeof(NODE));
+  lj_name_node->ptr_data = lj_name, lj_name_node->left = NULL,
+  lj_name_node->right = NULL;
+  lj_name_node->node_t = PLAYER_NAME;
+
+  char *kg_name = "Kevin Garnet";
+  *kg_name_node = (NODE *)malloc(sizeof(NODE));
+  kg_name_node->ptr_data = kg_name, kg_name_node->left = NULL,
+  kg_name_node->right = NULL;
+  kg_name_node->node_t = PLAYER_NAME;
+
+  char *db_name = "Devin Book";
+  *db_name_node = (NODE *)malloc(sizeof(NODE));
+  db_name_node->ptr_data = db_name, db_name_node->left = NULL,
+  db_name_node->right = NULL;
+  db_name_node->node_t = PLAYER_NAME;
+
+  char *cp_name = "Chris Paul";
+  *cp_name_node = (NODE *)malloc(sizeof(NODE));
+  cp_name_node->ptr_data = cp_name, cp_name_node->left = NULL,
+  cp_name_node->right = NULL;
+  cp_name_node->node_t = PLAYER_NAME;
+
+  char *yao_name = "Yao Ming";
+  *ym_name_node = (NODE *)malloc(sizeof(NODE));
+  ym_name_node->ptr_data = yao_name, ym_name_node->left = NULL,
+  ym_name_node->right = NULL;
+  ym_name_node->node_t = PLAYER_NAME;
+
+  char *yi_name = "Yi Jianlian";
+  *yi_name_node = (NODE *)malloc(sizeof(NODE));
+  yi_name_node->ptr_data = yi_name, yi_name_node->left = NULL,
+  yi_name_node->right = NULL;
+  yi_name_node->node_t = PLAYER_NAME;
+
+  char *wzz_name = "Wang Zhizhi";
+  *wzz_name_node = (NODE *)malloc(sizeof(NODE));
+  wzz_name_node->ptr_data = wzz_name, wzz_name_node->left = NULL,
+  wzz_name_node->right = NULL;
+  wzz_name_node->node_t = PLAYER_NAME;
+
+  char *dr_name = "Derick Rose";
+  *dr_name_node = (NODE *)malloc(sizeof(NODE));
+  dr_name_node->ptr_data = dr_name, dr_name_node->left = NULL,
+  dr_name_node->right = NULL;
+  dr_name_node->node_t = PLAYER_NAME;
+
+  char *ra_name = "Ray Allen";
+  *ra_name_node = (NODE *)malloc(sizeof(NODE));
+  ra_name_node->ptr_data = ra_name, ra_name_node->left = NULL,
+  ra_name_node->right = NULL;
+  ra_name_node->node_t = PLAYER_NAME;
+  /* player name initial complete. */
+
+}
+
+void test_player_name_tree() {
+  init_player_name_tree();
+  int print_count = 0;
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, mj_name_node);
+
+  insert_leaf(root_node, ra_name_node);
+
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(mj_name_node);
+
+  insert_leaf(root_node, yi_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, wzz_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, dr_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, cp_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(kg_name_node);
+
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(sc_name_node);
+  delete_leaf(kg_name_node);
+  delete_leaf(wzz_name_node);
+
+  insert_leaf(root_node, dr_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, ym_name_node);
+  delete_leaf(lj_name_node);
+  delete_leaf(ra_name_node);
+  delete_leaf(mj_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(ym_name_node);
+
+  insert_leaf(root_node, dr_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, td_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, lj_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, mj_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, sc_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(cp_name_node);
+  delete_leaf(kb_name_node);
+  delete_leaf(yi_name_node);
+  delete_leaf(ym_name_node);
+  delete_leaf(sc_name_node);
+  delete_leaf(ra_name_node);
+  delete_leaf(kg_name_node);
+  delete_leaf(dr_name_node);
+  delete_leaf(td_name_node);
+  insert_leaf(root_node, sc_name_node);
+  insert_leaf(root_node, mj_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(kb_name_node);
+  delete_leaf(ym_name_node);
+  delete_leaf(yi_name_node);
+  delete_leaf(dr_name_node);
+  delete_leaf(ra_name_node);
+  delete_leaf(lj_name_node);
+  delete_leaf(wzz_name_node);
+  delete_leaf(sc_name_node);
+  delete_leaf(td_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(cp_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  insert_leaf(root_node, kb_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  delete_leaf(mj_name_node);
+  insert_leaf(root_node, wzz_name_node);
+  insert_leaf(root_node, ym_name_node);
+  insert_leaf(root_node, yi_name_node);
+  insert_leaf(root_node, sc_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+  delete_leaf(kb_name_node);
+  delete_leaf(yi_name_node);
+  printf("~~~~~~~~~~~~~~~~~print count: %d~~~~~~~~~~~~~~~~~~~~~~~\n",
+         print_count++);
+  print_tree(root_node);
+
+  free(root_node);
+}

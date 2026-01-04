@@ -1,0 +1,35 @@
+#include "log.h"
+
+char* time_format_with_millisecond(){
+	struct timeval *time_v = (struct timeval*)malloc(sizeof(struct timeval));
+	struct tm *ptr_time = NULL;
+	time_t timep;
+	static char time_buf[80] = "";
+	char str_mil_sec[20] = "";
+	char str_buf[20] = "";
+	char* str_time = ".";
+	time(&timep);
+	ptr_time = localtime(&timep);
+	gettimeofday(time_v, NULL);
+	printf("second: %ld, usecond: %ld\n", time_v->tv_sec, time_v->tv_usec);
+	long mil_sec = time_v->tv_usec / 1000;
+	strftime(time_buf, sizeof(time_buf),"%Y-%m-%d %H:%M:%S", ptr_time);
+	sprintf(str_mil_sec, "%ld", mil_sec);
+	strcat(str_buf, str_time);
+	strcat(str_buf, str_mil_sec);
+	strcat(time_buf, str_buf);
+	free(time_v);
+
+	return time_buf;
+}
+
+int main(int argc, char* argv[]){
+	
+	char* get_time_fmt = time_format_with_millisecond();
+				
+	printf("%s %d %s %d\n", get_time_fmt, 1024,"Good day.", 4096);
+
+	log_e("%s %d %d\n", "Try it boy.", 1024, 8192);
+
+	log_new("%s %d\n", "Never stop!", 2022);
+}

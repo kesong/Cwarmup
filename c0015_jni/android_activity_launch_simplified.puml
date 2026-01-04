@@ -1,0 +1,48 @@
+@startuml Android Activity Launch Simplified
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Android Activity Launch Process (Simplified)
+
+participant "Client App" as Client
+participant "ActivityManagerService" as AMS
+participant "Zygote" as Zygote
+participant "Target App Process" as TargetApp
+participant "ActivityThread" as AT
+participant "Activity" as Activity
+participant "WindowManager" as WM
+
+== 1. Launch Request ==
+Client -> AMS: startActivity(Intent)
+AMS -> AMS: resolve Intent & check permissions
+
+== 2. Process Creation (if needed) ==
+alt Cold Start
+    AMS -> Zygote: fork new process
+    Zygote -> TargetApp: create process
+    TargetApp -> AT: main()
+    AT -> AMS: attachApplication()
+end
+
+== 3. Activity Creation ==
+AMS -> AT: scheduleLaunchActivity()
+AT -> AT: handleLaunchActivity()
+AT -> Activity: new Activity()
+AT -> Activity: attach()
+
+== 4. Activity Lifecycle ==
+AT -> Activity: onCreate()
+Activity -> Activity: setContentView()
+AT -> Activity: onStart()
+AT -> Activity: onResume()
+
+== 5. Window & Display ==
+Activity -> WM: create window
+WM -> WM: make visible
+WM -> Activity: onWindowFocusChanged(true)
+
+== 6. Complete ==
+AT -> AMS: activityResumed()
+note over Activity: Activity is now visible and interactive
+
+@enduml
