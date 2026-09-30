@@ -44,13 +44,7 @@ TestResult test_build_llrbtree();
 TestResult test_insert_node_as_root_node();
 TestResult test_check_after_each_insert();
 TestResult test_insert_node_exist();
-TestResult test_insert_node_at_left_branch();
-TestResult test_insert_node_at_left_left_branch();
-TestResult test_insert_node_at_left_right_branch();
-TestResult test_insert_node_at_right_right_branch();
-TestResult test_insert_node_at_right_left_branch();
 TestResult test_check_color_and_modify();
-TestResult test_insert_LR_rotate_then_root_right_rotate();
 
 // test delete node
 // 3.1-1

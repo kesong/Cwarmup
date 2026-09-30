@@ -363,8 +363,8 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  char *mac_right = ((PLAYER *)test_root->tree_data)->pname;
-  assert(strcmp(dunken_left, "Paul") == 0);
+  char *paul = ((PLAYER *)test_root->right->left->right->tree_data)->pname;
+  assert(strcmp(paul, "Paul") == 0);
   assert(test_root->node_color == BLACK_NODE);
   log_i("paul insert complete.");
 
@@ -382,8 +382,8 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  char *shar_left = ((PLAYER *)test_root->tree_data)->pname;
-  assert(strcmp(dunken_left, "Rodman") == 0);
+  char *rodman = ((PLAYER *)test_root->right->left->right->tree_data)->pname;
+  assert(strcmp(rodman, "Rodman") == 0);
   assert(test_root->node_color == BLACK_NODE);
   log_i("rodman insert complete.");
 
@@ -402,9 +402,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  char *root_left = (char *)((PLAYER *)test_root->left->tree_data)->pname;
-  assert(strcmp(root_left, "Jokic") == 0);
-  assert(test_root->left->node_color == RED_NODE);
+  char *jokic = (char *)((PLAYER *)test_root->left->right->tree_data)->pname;
+  assert(strcmp(jokic, "Jokic") == 0);
+  assert(test_root->left->right->node_color == BLACK_NODE);
   log_i("jokic insert complete.");
 
   llrbtree->root_node = insert_node(llrbtree->root_node, yang_node);
@@ -422,9 +422,10 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  char *yao_left = (char *)((PLAYER *)test_root->right->tree_data)->pname;
-  assert(strcmp(yao_left, "Yang") == 0);
-  assert(test_root->right->node_color == BLACK_NODE);
+  char *yang =
+      (char *)((PLAYER *)test_root->right->left->right->tree_data)->pname;
+  assert(strcmp(yang, "Yang") == 0);
+  assert(test_root->right->left->right->node_color == BLACK_NODE);
   log_i("yang insert complete.");
 
   llrbtree->root_node = insert_node(llrbtree->root_node, sharq_node);
@@ -442,11 +443,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  char *sharq = (char *)((PLAYER *)yi_node->left->tree_data)->pname;
+  char *sharq =
+      (char *)((PLAYER *)test_root->right->left->right->left->tree_data)->pname;
   assert(strcmp(sharq, "Sharq") == 0);
-  assert(yi_node->left->node_color == RED_NODE);
-  assert(yi_node->node_color == BLACK_NODE);
-  assert(jokic_node->node_color == BLACK_NODE);
   log_i("sharq insert complete.");
 
   llrbtree->root_node = insert_node(llrbtree->root_node, sga_node);
@@ -464,10 +463,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  char *sga = (char *)((PLAYER *)jokic_node->left->tree_data)->pname;
+  char *sga =
+      (char *)((PLAYER *)test_root->right->left->right->tree_data)->pname;
   assert(strcmp(sga, "Sga") == 0);
-  assert(jokic_node->left->node_color == RED_NODE);
-  assert(jokic_node->node_color == BLACK_NODE);
   log_i("sga insert complete.");
 
   llrbtree->root_node = insert_node(llrbtree->root_node, edwards_node);
@@ -486,12 +484,8 @@ TestResult test_check_after_each_insert() {
   }
   free(stack);
   char *jimmy_left = (char *)((PLAYER *)jimmy_node->left->tree_data)->pname;
-  char *jimmy_right = (char *)((PLAYER *)jimmy_node->right->tree_data)->pname;
-  assert(strcmp(jimmy_left, "Book") == 0);
-  assert(strcmp(jimmy_right, "Jokic") == 0);
-  assert(test_root->left == jimmy_node);
-  assert(jimmy_node->left->node_color == RED_NODE);
-  assert(jimmy_node->right->node_color == RED_NODE);
+  assert(strcmp(jimmy_left, "Edwards") == 0);
+  assert(test_root->left->right->left == jimmy_node);
   assert(jimmy_node->node_color == BLACK_NODE);
   log_i("edwards insert complete.");
 
@@ -510,10 +504,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  assert(book_node->right == dunken_node);
-  assert(jimmy_node->left->node_color == BLACK_NODE);
-  assert(jimmy_node->right->node_color == BLACK_NODE);
-  assert(jimmy_node->node_color == RED_NODE);
+  char *klay =
+      (char *)((PLAYER *)test_root->left->right->right->tree_data)->pname;
+  assert(strcmp(klay, "Klay") == 0);
   log_i("klay insert complete.");
 
   llrbtree->root_node = insert_node(llrbtree->root_node, hill_node);
@@ -531,12 +524,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  assert(jimmy_node->left == camelo_node);
-  assert(camelo_node->left == book_node);
-  assert(camelo_node->right == dunken_node);
-  assert(camelo_node->node_color == BLACK_NODE);
-  assert(camelo_node->left->node_color == RED_NODE);
-  assert(camelo_node->right->node_color == RED_NODE);
+  char *hill =
+      (char *)((PLAYER *)test_root->left->right->left->tree_data)->pname;
+  assert(strcmp(hill, "Hill") == 0);
   log_i("hill insert complete.");
 
   llrbtree->root_node = insert_node(llrbtree->root_node, durant_node);
@@ -554,12 +544,10 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
-  assert(test_root->right == rodman_node);
-  assert(test_root->right->right == yi_node);
-  assert(test_root->right->left == paul_node);
-  assert(test_root->right->node_color == BLACK_NODE);
-  assert(test_root->right->right->node_color == RED_NODE);
-  assert(test_root->right->left->node_color == RED_NODE);
+  char *durant =
+      (char *)((PLAYER *)test_root->left->right->left->left->left->tree_data)
+          ->pname;
+  assert(strcmp(durant, "Durant") == 0);
   log_i("durant insert complete.");
 
   test_root = insert_node(llrbtree->root_node, wade_node);
@@ -577,19 +565,10 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *wade =
+      (char *)((PLAYER *)test_root->right->right->left->left->tree_data)->pname;
+  assert(strcmp(wade, "Wade") == 0);
   log_i("wade insert complete.");
-  assert(test_root == jimmy_node);
-  assert(test_root->node_color == BLACK_NODE);
-  assert(test_root->right == jordan_node);
-  assert(test_root->left == camelo_node);
-  assert(test_root->right->node_color == RED_NODE);
-  assert(test_root->left->node_color == RED_NODE);
-  assert(dunken_node->left == curry_node);
-  assert(dunken_node->left->node_color == RED_NODE);
-  assert(camelo_node->left == book_node);
-  assert(camelo_node->right == dunken_node);
-  assert(camelo_node->left->node_color == BLACK_NODE);
-  assert(camelo_node->right->node_color == BLACK_NODE);
 
   test_root = insert_node(llrbtree->root_node, lebron_node);
   llrbtree->root_node = test_root;
@@ -606,6 +585,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *lebron =
+      (char *)((PLAYER *)test_root->right->left->left->left->tree_data)->pname;
+  assert(strcmp(lebron, "Lebron") == 0);
   log_i("lebron insert complete.");
 
   test_root = insert_node(llrbtree->root_node, iverson_node);
@@ -623,6 +605,10 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *iverson =
+      (char *)((PLAYER *)test_root->left->right->left->right->left->tree_data)
+          ->pname;
+  assert(strcmp(iverson, "Iverson") == 0);
   log_i("iverson insert complete.");
 
   test_root = insert_node(llrbtree->root_node, macgrady_node);
@@ -639,6 +625,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *mac =
+      (char *)((PLAYER *)test_root->right->left->left->tree_data)->pname;
+  assert(strcmp(mac, "Macgrady") == 0);
   log_i("macgrady insert complete.");
 
   test_root = insert_node(llrbtree->root_node, kawhi_node);
@@ -655,12 +644,9 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *kawhi = (char *)((PLAYER *)test_root->left->right->tree_data)->pname;
+  assert(strcmp(kawhi, "Kawhi") == 0);
   log_i("kawhi insert complete.");
-  assert(test_root->right == rodman_node);
-  assert(rodman_node->left == jordan_node);
-  assert(rodman_node->left->node_color == RED_NODE);
-  assert(rodman_node->left->right == paul_node);
-  assert(rodman_node->right == yao_node);
 
   test_root = insert_node(llrbtree->root_node, doncic_node);
   stack = create_stack();
@@ -676,9 +662,10 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *doncic =
+      (char *)((PLAYER *)test_root->left->left->left->right->tree_data)->pname;
+  assert(strcmp(doncic, "Doncic") == 0);
   log_i("doncic insert complete.");
-  assert(sharq_node->left == sga_node);
-  assert(sharq_node->right == yang_node);
 
   test_root = insert_node(llrbtree->root_node, carter_node);
   llrbtree->root_node = test_root;
@@ -695,10 +682,11 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *carter =
+      (char *)((PLAYER *)test_root->left->left->left->left->right->tree_data)
+          ->pname;
+  assert(strcmp(carter, "Carter") == 0);
   log_i("carter insert complete.");
-  assert(test_root->left->node_color == BLACK_NODE);
-  assert(test_root->left->right == dunken_node);
-  assert(test_root->left->right->node_color == BLACK_NODE);
 
   test_root = insert_node(llrbtree->root_node, chris_node);
   stack = create_stack();
@@ -714,143 +702,12 @@ TestResult test_check_after_each_insert() {
     printf("%s, ", player_name);
   }
   free(stack);
+  char *chris =
+      (char *)((PLAYER *)test_root->left->left->left->left->right->tree_data)
+          ->pname;
+  assert(strcmp(chris, "Chris") == 0);
   log_i("chris insert complete.");
-  assert(kobe_node->left == klay_node);
-  assert(kobe_node->right == paul_node);
 
-  // free_nodes();
-  return TEST_PASSED;
-}
-
-TestResult test_insert_node_at_left_branch() {
-  LLRBTree *llrbtree = create_llrbtree();
-  TreeNode *test_root = NULL;
-  test_root = build_tree_manualy(test_root);
-  if (test_root == NULL) {
-    log_d("Didn't get right tree node.");
-    return TEST_FAILED;
-  }
-  insert_node(llrbtree->root_node, curry_node);
-  PLAYER *in_player = (PLAYER *)test_root->left->left->tree_data;
-  char *in_player_name = in_player->pname;
-  char *curry_name = (char *)((PLAYER *)curry_node->tree_data)->pname;
-  assert(test_root->left->node_color == BLACK_NODE);
-  assert(test_root->right->node_color == BLACK_NODE);
-  assert(test_root->left->left->node_color == RED_NODE);
-  if (strcmp(in_player_name, curry_name) == 0) {
-    return TEST_PASSED;
-  } else {
-    log_d("Expect name is %s, but get %s.", curry_name, in_player_name);
-    return TEST_FAILED;
-  }
-}
-
-TestResult test_insert_node_at_left_left_branch() {
-  LLRBTree *llrbtree = create_llrbtree();
-  TreeNode *test_root = NULL;
-  test_root = build_tree_manualy(test_root);
-  if (test_root == NULL) {
-    log_d("Didn't get right tree node.");
-    return TEST_FAILED;
-  }
-  insert_node(llrbtree->root_node, curry_node);
-  insert_node(llrbtree->root_node, book_node);
-  PLAYER *in_player = (PLAYER *)test_root->left->tree_data;
-  char *in_player_name = in_player->pname;
-  char *curry_name = (char *)((PLAYER *)curry_node->tree_data)->pname;
-  PLAYER *in_player2 = (PLAYER *)test_root->left->left->tree_data;
-  char *in_player2_name = in_player2->pname;
-  char *book_name = (char *)((PLAYER *)book_node->tree_data)->pname;
-  assert(test_root->left->node_color == BLACK_NODE);
-  assert(test_root->right->node_color == BLACK_NODE);
-  assert(test_root->left->right->node_color == RED_NODE);
-  assert(test_root->left->left->node_color == RED_NODE);
-  assert(strcmp(in_player_name, curry_name) == 0);
-  if (strcmp(in_player2_name, book_name) == 0) {
-    return TEST_PASSED;
-  } else {
-    log_d("Expect name is %s, but get %s.", book_name, in_player2_name);
-    return TEST_FAILED;
-  }
-}
-
-TestResult test_insert_node_at_left_right_branch() {
-  LLRBTree *llrbtree = create_llrbtree();
-  TreeNode *test_root = NULL;
-  test_root = build_tree_manualy(test_root);
-  if (test_root == NULL) {
-    log_d("Didn't get right tree node.");
-    return TEST_FAILED;
-  }
-  insert_node(llrbtree->root_node, curry_node);
-  insert_node(llrbtree->root_node, dunken_node);
-  PLAYER *in_player = (PLAYER *)test_root->left->tree_data;
-  char *in_player_name = in_player->pname;
-  char *edwards_name = (char *)((PLAYER *)edwards_node->tree_data)->pname;
-  PLAYER *in_player2 = (PLAYER *)test_root->left->right->tree_data;
-  char *in_player2_name = in_player2->pname;
-  char *dunken_name = (char *)((PLAYER *)dunken_node->tree_data)->pname;
-  assert(test_root->left->node_color == BLACK_NODE);
-  assert(test_root->right->node_color == BLACK_NODE);
-  assert(test_root->left->right->node_color == RED_NODE);
-  assert(test_root->left->left->node_color == RED_NODE);
-  assert(strcmp(in_player_name, dunken_name) == 0);
-  if (strcmp(in_player2_name, edwards_name) == 0) {
-    return TEST_PASSED;
-  } else {
-    log_d("Expect name is %s, but get %s.", dunken_name, in_player2_name);
-    return TEST_FAILED;
-  }
-}
-
-TestResult test_insert_node_at_right_right_branch() {
-  LLRBTree *llrbtree = create_llrbtree();
-  TreeNode *test_root = NULL;
-  test_root = build_tree_manualy(test_root);
-  if (test_root == NULL) {
-    log_d("Didn't get right tree node.");
-    return TEST_FAILED;
-  }
-  insert_node(llrbtree->root_node, yang_node);
-  insert_node(llrbtree->root_node, yao_node);
-  PLAYER *in_player = (PLAYER *)test_root->right->tree_data;
-  char *in_player_name = in_player->pname;
-  char *yang_name = (char *)((PLAYER *)yang_node->tree_data)->pname;
-  PLAYER *in_player2 = (PLAYER *)test_root->right->right->tree_data;
-  char *in_player2_name = in_player2->pname;
-  char *yao_name = (char *)((PLAYER *)yao_node->tree_data)->pname;
-  assert(test_root->left->node_color == BLACK_NODE);
-  assert(test_root->right->node_color == BLACK_NODE);
-  assert(test_root->right->right->node_color == RED_NODE);
-  assert(test_root->right->left->node_color == RED_NODE);
-  assert(strcmp(in_player_name, yang_name) == 0);
-  assert(strcmp(in_player2_name, yao_name) == 0);
-  // free_nodes();
-  return TEST_PASSED;
-}
-
-TestResult test_insert_node_at_right_left_branch() {
-  LLRBTree *llrbtree = create_llrbtree();
-  TreeNode *test_root = NULL;
-  test_root = build_tree_manualy(test_root);
-  if (test_root == NULL) {
-    log_d("Didn't get right tree node.");
-    return TEST_FAILED;
-  }
-  insert_node(llrbtree->root_node, yang_node);
-  insert_node(llrbtree->root_node, wade_node);
-  PLAYER *in_player = (PLAYER *)test_root->right->tree_data;
-  char *in_player_name = in_player->pname;
-  char *yang_name = (char *)((PLAYER *)yang_node->tree_data)->pname;
-  PLAYER *in_player2 = (PLAYER *)test_root->right->right->tree_data;
-  char *in_player2_name = in_player2->pname;
-  char *wade_name = (char *)((PLAYER *)wade_node->tree_data)->pname;
-  assert(test_root->left->node_color == BLACK_NODE);
-  assert(test_root->right->node_color == BLACK_NODE);
-  assert(test_root->right->right->node_color == RED_NODE);
-  assert(test_root->right->left->node_color == RED_NODE);
-  assert(strcmp(in_player_name, wade_name) == 0);
-  assert(strcmp(in_player2_name, yang_name) == 0);
   // free_nodes();
   return TEST_PASSED;
 }

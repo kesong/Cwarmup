@@ -33,13 +33,6 @@ int main(int argc, char **argv) {
       {"test right rotate", test_right_rotate},
       {"test left rotate then right", test_left_rotate_then_right},
       {"test check after each insert", test_check_after_each_insert},
-      //{"test insert node at left branch", test_insert_node_at_left_branch},
-      //{"test insert node at left left branch",
-      // test_insert_node_at_left_left_branch},
-      //{"test right rotate then left", test_right_rotate_then_left},
-      //{"test check after every insert", test_check_after_every_insert},
-      //{"test insert LR rotate then root right rotate",
-      // test_insert_LR_rotate_then_root_right_rotate},
       //{"test preorder traversal without
       // recurse",test_preorder_traversal_without_recurse},
       //{"test preorder traversal without recurse
