@@ -1,0 +1,19 @@
+# clangd 配置 —— 放在 Cwarmup 仓库根目录，对下面所有练习项目生效
+# （clangd 会沿父目录逐级查找 .clangd，所以不需要每个项目各放一份）
+#
+# 关于 -I：各项目的 #include 都写成相对路径（如 "../lib/queue.h"、
+# "../src/left_leaning_red_black_tree.h"），clangd 会按「包含它的那个文件
+# 所在目录」去解析，因此这里不需要再加 -I 参数。
+#
+# -Wall -g 与各项目 makefile 里的 `CFLAGS = -Wall -g` 保持一致，
+# 目的是让编辑器里的诊断和 gcc 编译时的告警对齐（不加 -Wall 的话，
+# clangd 不会报 unused variable 这类告警）。
+CompileFlags:
+  Add:
+    - -Wall
+    - -g
+
+Diagnostics:
+  # clangd 17+ 默认 UnusedIncludes: Strict，对这些相对路径包含会产生
+  # 大量"未使用的 include"误报，这里关掉。
+  UnusedIncludes: None

@@ -1,4 +1,6 @@
-#include "log.h"
+#include "binary_search_tree.h"
+#include "../test/test_player.h"
+#include <string.h>
 
 TreeNode *root_node = NULL;
 
@@ -7,13 +9,13 @@ TreeNode *build_tree(NodeEnum node_type) {
   if (root_node == NULL) {
     log_e("error, malloc for root node failed.");
   }
-  static int tree_type = node_type;
-  switch (tree_type){
+  NodeEnum tree_type = node_type;
+  switch (tree_type) {
   case NODE_CHAR:
     log_i("%s", "The tree node will orgnized by name order.");
     break;
   case NODE_INT:
-    log_i("%s", "The tree node will orgnized by year order.");
+    log_i("%s", "The tree node will orgnized by number order.");
     break;
   default:
     log_e("%s", "Unknown order, please confirm the type is valid.");
@@ -33,107 +35,117 @@ bool is_tree_empty(TreeNode *root) {
   return false;
 }
 
-CompareResult compare_node_by_name(TreeNode* node_in_tree, void* node_input){
-  PLAYER *player_in_tree = (PLAYER*)node_in_tree->tree_data->pname;
-  char *player_name_in_tree = (char*)player_in_tree->pname;
-  PLAYER *player_input = (PLAYER*)node_input;
-  char *player_name_in_node = (char*)player_input->pname;
-  if(strcmp(player_name_in_tree, player_name_in_node) > 0){
-    return CompareResult.N_SMALLER;
+CompareResult compare_node_by_name(TreeNode *node_in_tree, void *node_input) {
+  PLAYER *player_in_tree = (PLAYER *)node_in_tree->tree_data;
+  char *player_name_in_tree = (char *)player_in_tree->pname;
+  PLAYER *player_input = (PLAYER *)node_input;
+  char *player_name_in_node = (char *)player_input->pname;
+  if (strcmp(player_name_in_tree, player_name_in_node) > 0) {
+    return N_SMALLER;
   } else if (strcmp(player_name_in_tree, player_name_in_node) == 0) {
-    return CompareResult.N_EQUAL;
+    return N_EQUAL;
   } else {
-    return CompareResult.N_GREATER;
+    return N_GREATER;
   }
 }
 
-CompareResult compare_node_by_number(TreeNode* node_in_tree, void* node_input){
-  PLAYER *player_in_tree = (PLAYER*)node_in_tree->tree_data;
+CompareResult compare_node_by_number(TreeNode *node_in_tree, void *node_input) {
+  PLAYER *player_in_tree = (PLAYER *)node_in_tree->tree_data;
   int player_number_in_tree = (int)player_in_tree->pnumber;
-  PLAYER *player_input = (PLAYER*)node_input;
+  PLAYER *player_input = (PLAYER *)node_input;
   int player_number_in_node = (int)player_input->pnumber;
-  if(player_number_in_tree > player_number_in_node){
-    return CompareResult.N_SMALLER;
-  } else if (player_name_in_tree == player_name_in_node) {
-    return CompareResult.N_EQUAL;
-  } else{
-    return CompareResult.N_GREATER;
+  if (player_number_in_tree > player_number_in_node) {
+    return N_SMALLER;
+  } else if (player_number_in_tree == player_number_in_node) {
+    return N_EQUAL;
+  } else {
+    return N_GREATER;
   }
-  return false;
-
+}
 
 // we always pass root node to the start_node
-TreeNode *insert_tree_node(TreeNode *start_node, void *in_node, NodeEnum node_enum) {
+TreeNode *insert_tree_node(TreeNode *start_node, void *in_node,
+                           NodeEnum node_enum) {
   TreeNode *current_node = start_node;
   TreeNode *wrap_node = (TreeNode *)malloc(sizeof(TreeNode));
+  memset(wrap_node, 0, sizeof(TreeNode));
   if (wrap_node == NULL) {
     log_e("Failed to allocate memory for new node");
     return root_node;
   }
-  wrap_node->tree_data = (TreeNode*)in_node;
+  wrap_node->tree_data = (PLAYER *)in_node;
   wrap_node->left = NULL;
   wrap_node->right = NULL;
 
-  if (root_node == NULL || root_node->tree_data == NULL) {
-    root_node->tree_data = in_node;
-    free(wrap_node);
+  PLAYER *in_node_player = (PLAYER *)in_node;
+
+  if (root_node == NULL) {
+    root_node = wrap_node;
+    return root_node;
+  }
+  if (root_node->tree_data == NULL) {
+    root_node->tree_data = in_node_player;
     return root_node;
   }
   if (start_node == NULL || start_node->tree_data == NULL) {
     return root_node;
   }
 
-  if(in_node == NULL || in_node->tree_data == NULL){
+  if (in_node == NULL || in_node_player == NULL) {
     return root_node;
   }
+  // 未给left_or_right赋初始值的时候，编译器默认赋值为N_EQUAL；
   CompareResult left_or_right;
 
-  // left_or_right is true, the in_node smaller tha the right tree, so the in_node must be a node of the left tree.
+  // left_or_right is true, the in_node smaller tha the right tree, so the
+  // in_node must be a node of the left tree.
   // 插入的缺点是插入的节点多了以后二叉搜索树可能变得不平衡，需要增加旋转和平衡性判断
-  while (current_node != NULL) {
+  while (current_node != NULL && current_node->tree_data != NULL) {
     switch (node_enum) {
-      case 0:
-        left_or_right = compare_node_by_name(current_node, wrap_node);
-        if(left_or_right == CompareResult.N_SMALLER){
-          if (current_node->left != NULL) {
-              current_node = current_node->left;
-          } else {
-              current_node->left = in_node;
-              return root_node;
-          }
-        } else if (left_or_right == CompareResult.N_GREATER) {
-            if (current_node->right != NULL) {
-              current_node = current_node->right;
-            } else {
-              current_node->right = in_node;
-              return root_node;
-            }
-          } else if (left_or_right == CompareResult.N_EQUAL) {
-            log_e("Node already exist in the tree, cannot insert node.\n");
-          }
-        break;
-      case 1:
-        left_or_right = compare_node_by_year(current_node, wrap_node);
-        if(left_or_right == CompareResult.N_SMALLER){
-            if (current_node->left != NULL) {
-              current_node = current_node->left;
-            } else {
-              current_node->left = in_node;
-              return root_node;
-            }
-          } else if (left_or_right == CompareResult.N_GREATER) {
-            if (current_node->right != NULL) {
-              current_node = current_node->right;
-            } else {
-              current_node->right = in_node;
-              return root_node;
-            }
-          } else if (left_or_right == CompareResult.N_EQUAL) {
-            log_e("Node already exist in the tree, cannot insert node.\n");
-          }
-        break;
-      default:
+    case 0:
+      left_or_right = compare_node_by_name(current_node, in_node);
+      if (left_or_right == N_SMALLER) {
+        if (current_node->left != NULL) {
+          current_node = current_node->left;
+        } else {
+          current_node->left = wrap_node;
+          return root_node;
+        }
+      } else if (left_or_right == N_GREATER) {
+        if (current_node->right != NULL) {
+          current_node = current_node->right;
+        } else {
+          current_node->right = wrap_node;
+          return root_node;
+        }
+      } else if (left_or_right == N_EQUAL) {
+        log_e("Node already exist in the tree, cannot insert node.");
         return root_node;
+      }
+      break;
+    case 1:
+      left_or_right = compare_node_by_number(current_node, in_node);
+      if (left_or_right == N_SMALLER) {
+        if (current_node->left != NULL) {
+          current_node = current_node->left;
+        } else {
+          current_node->left = wrap_node;
+          return root_node;
+        }
+      } else if (left_or_right == N_GREATER) {
+        if (current_node->right != NULL) {
+          current_node = current_node->right;
+        } else {
+          current_node->right->tree_data = wrap_node;
+          return root_node;
+        }
+      } else if (left_or_right == N_EQUAL) {
+        log_e("Node already exist in the tree, cannot insert node.");
+        return root_node;
+      }
+      break;
+    default:
+      return root_node;
     }
   }
   return root_node;
@@ -317,7 +329,7 @@ TreeNode *postorder_traversal_without_recurse(TreeNode *trav_node,
                                               TreeNode **trav_result,
                                               void *none_ptr) {
   if (trav_node == NULL) {
-    return;
+    return NULL;
   }
   Stack *stack = create_stack();
   TreeNode *poped_node = NULL;
@@ -356,7 +368,7 @@ TreeNode *postorder_traversal_without_recurse_2(TreeNode *trav_node,
                                                 TreeNode **trav_result,
                                                 void *none_ptr) {
   if (trav_node == NULL) {
-    return;
+    return NULL;
   }
   Stack *stack = create_stack();
   Stack *temp_stack = create_stack();
@@ -408,7 +420,7 @@ TreeNode *mixedorder_traversal_without_recurse(TreeNode *trav_node,
                                                TreeNode **trav_result,
                                                void *none_ptr) {
   if (trav_node == NULL) {
-    return;
+    return NULL;
   }
   Stack *stack = create_stack();
   TreeNode *poped_node = NULL;
